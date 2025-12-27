@@ -1,33 +1,43 @@
+require('dotenv').config(); // MUST be the first line
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config();
 const bookingRoutes = require('./routes/bookingRoutes.js');
+const eventRoutes = require('./routes/eventRoutes');
+const authRoutes = require('./routes/authRoutes');
+const User = require('./models/user.js');
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// --- 1. MIDDLEWARE (Must be before Routes) ---
+// This allows your Vercel frontend to talk to your Render backend
+app.use(cors({
+    origin: '*', // For production, you can replace this with your Vercel URL
+    methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// This is required to read data sent in the body of POST requests
 app.use(express.json());
 
-// Routes
-const eventRoutes = require('./routes/eventRoutes');
-app.use('/api/events', eventRoutes); // All event APIs will start with /api/events
-app.use('/api/bookings', bookingRoutes);
+// --- 2. DATABASE CONNECTION ---
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('🚀 MongoDB Connected Successfully'))
+  .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
-const authRoutes = require('./routes/authRoutes');
+// --- 3. ROUTES ---
+
+// ROOT ROUTE: Fixes the "Cannot GET /" error
+app.get('/', (req, res) => {
+  res.send('Tea Leaves API is Live and Running');
+});
+
+// API Routes
+app.use('/api/events', eventRoutes);
+app.use('/api/bookings', bookingRoutes);
 app.use('/api/auth', authRoutes);
 
-// Database Connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB Connected'))
-  .catch(err => console.log(err));
-
-const PORT = process.env.PORT || 5000;
-
-const User = require('./models/user.js');
-
-// API endpoint to get all users
+// User Management APIs
 app.get('/api/users', async (req, res) => {
   try {
     const users = await User.find();
@@ -37,7 +47,6 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-// API endpoint to add a user (for testing)
 app.post('/api/users', async (req, res) => {
   const newUser = new User(req.body);
   try {
@@ -48,7 +57,6 @@ app.post('/api/users', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
-
-
-
+// --- 4. START SERVER ---
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`✨ Server active on port ${PORT}`));
