@@ -1,0 +1,22 @@
+{
+  "name": "mern-project",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@yudiel/react-qr-scanner": "^2.5.0",
+    "axios": "^1.13.2",
+    "concurrently": "^9.2.1",
+    "framer-motion": "^12.23.26",
+    "lucide-react": "^0.562.0",
+    "react-hot-toast": "^2.6.0"
+  }
+}
